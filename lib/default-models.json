@@ -1,0 +1,38 @@
+[
+  {
+    "providerId": "openai",
+    "providerName": "OpenAI",
+    "model": "gpt-4o-mini",
+    "label": "OpenAI GPT-4o mini"
+  },
+  {
+    "providerId": "zhipu",
+    "providerName": "智谱 GLM",
+    "model": "glm-4-flash",
+    "label": "智谱 GLM-4 Flash"
+  },
+  {
+    "providerId": "qwen",
+    "providerName": "通义千问",
+    "model": "qwen-plus",
+    "label": "通义千问 Plus"
+  },
+  {
+    "providerId": "deepseek",
+    "providerName": "DeepSeek",
+    "model": "deepseek-chat",
+    "label": "DeepSeek Chat"
+  },
+  {
+    "providerId": "baidu",
+    "providerName": "文心一言",
+    "model": "ernie-4.0-turbo-8k",
+    "label": "文心一言 4.0 Turbo"
+  },
+  {
+    "providerId": "moonshot",
+    "providerName": "Moonshot",
+    "model": "moonshot-v1-8k",
+    "label": "Moonshot v1 8K"
+  }
+]

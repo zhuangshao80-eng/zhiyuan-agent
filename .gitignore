@@ -1,0 +1,27 @@
+node_modules/
+.local-node/
+dist/
+release/
+out/
+.DS_Store
+*.log
+*.local
+
+# Runtime data and secrets
+user-data/
+agents/*/sessions/
+agents/*/memory/facts.db*
+agents/*/memory/summaries/
+agents/*/desk/cron-runs/
+**/provider-keys.json
+**/*.key
+**/*.pem
+**/*.p12
+**/*.env
+.env
+.env.*
+
+# Local verification output
+artifacts/*.png
+artifacts/*.webm
+artifacts/*.mov

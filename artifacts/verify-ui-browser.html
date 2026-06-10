@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="zh-CN" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>智元Agent UI 验收</title>
+    <script>
+      const sessions = [];
+
+      window.zhiyuan = {
+        getAppMetadata: async () => ({ name: "智元Agent", version: "0.1.0" }),
+        getSystemSnapshot: async () => ({ platform: "darwin", versions: {} }),
+        getEngineStatus: async () => "ready",
+        listModels: async () => [
+          {
+            providerId: "deepseek",
+            providerName: "DeepSeek",
+            model: "deepseek-chat",
+            label: "DeepSeek Chat",
+            capabilities: ["chat", "stream", "tools"]
+          }
+        ],
+        listProviders: async () => [
+          {
+            id: "deepseek",
+            name: "DeepSeek",
+            authType: "apikey",
+            compatLayer: "deepseek",
+            baseURL: "https://api.deepseek.com/v1",
+            envKey: "DEEPSEEK_API_KEY",
+            enabled: true
+          }
+        ],
+        listProviderConfig: async () => [{ providerId: "deepseek", apiKey: "sk-****c5a9" }],
+        saveProviderConfig: async (config) => [{ ...config, apiKey: "sk-****c5a9" }],
+        listSessions: async () => sessions,
+        getSession: async (id) => sessions.find((session) => session.id === id) ?? null,
+        createSession: async (model) => {
+          const session = {
+            id: "session_ui",
+            title: "新会话",
+            model,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            messages: []
+          };
+          sessions.unshift(session);
+          return session;
+        },
+        sendChatMessage: async (request) => {
+          const session = sessions[0] ?? (await window.zhiyuan.createSession(request.model));
+          const userMessage = {
+            id: "msg_user",
+            role: "user",
+            content: request.content,
+            createdAt: new Date().toISOString(),
+            model: request.model
+          };
+          const assistantMessage = {
+            id: "msg_assistant",
+            role: "assistant",
+            content: "",
+            createdAt: new Date().toISOString(),
+            model: request.model,
+            tool_calls: []
+          };
+          session.messages.push(userMessage, assistantMessage);
+
+          setTimeout(
+            () =>
+              window.__streamCb?.({
+                type: "tool_call",
+                sessionId: session.id,
+                messageId: assistantMessage.id,
+                toolCall: {
+                  id: "tool_1",
+                  name: "web_search",
+                  arguments: { query: "智元Agent" },
+                  status: "running"
+                }
+              }),
+            50
+          );
+          setTimeout(
+            () =>
+              window.__streamCb?.({
+                type: "tool_call",
+                sessionId: session.id,
+                messageId: assistantMessage.id,
+                toolCall: {
+                  id: "tool_1",
+                  name: "web_search",
+                  arguments: { query: "智元Agent" },
+                  status: "completed",
+                  result: "搜索词：智元Agent\n结果：工具调用可见。"
+                }
+              }),
+            100
+          );
+          setTimeout(
+            () =>
+              window.__streamCb?.({
+                type: "token",
+                sessionId: session.id,
+                messageId: assistantMessage.id,
+                token: "# 标题"
+              }),
+            150
+          );
+          setTimeout(
+            () =>
+              window.__streamCb?.({
+                type: "token",
+                sessionId: session.id,
+                messageId: assistantMessage.id,
+                token: "\n**DeepSeek** 流式回复已显示。"
+              }),
+            220
+          );
+          setTimeout(
+            () =>
+              window.__streamCb?.({
+                type: "done",
+                sessionId: session.id,
+                messageId: assistantMessage.id,
+                message: {
+                  ...assistantMessage,
+                  content: "# 标题\n**DeepSeek** 流式回复已显示。",
+                  tool_calls: [
+                    {
+                      id: "tool_1",
+                      name: "web_search",
+                      arguments: { query: "智元Agent" },
+                      status: "completed",
+                      result: "搜索词：智元Agent\n结果：工具调用可见。"
+                    }
+                  ]
+                }
+              }),
+            300
+          );
+
+          return { sessionId: session.id, userMessage, assistantMessage };
+        },
+        onStreamToken: (callback) => {
+          window.__streamCb = callback;
+          return () => {
+            window.__streamCb = undefined;
+          };
+        },
+        onToolCall: (callback) => {
+          window.__toolCb = callback;
+          return () => {
+            window.__toolCb = undefined;
+          };
+        }
+      };
+    </script>
+    <script type="module" crossorigin src="../dist/desktop/renderer/assets/index-DNt9RKg0.js"></script>
+    <link rel="stylesheet" crossorigin href="../dist/desktop/renderer/assets/index-plBLbUfV.css" />
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

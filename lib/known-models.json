@@ -1,0 +1,13 @@
+{
+  "gpt-4o-mini": ["chat", "stream", "tools", "vision"],
+  "gpt-4o": ["chat", "stream", "tools", "vision"],
+  "glm-4-flash": ["chat", "stream", "tools"],
+  "glm-4-plus": ["chat", "stream", "tools"],
+  "qwen-plus": ["chat", "stream", "tools"],
+  "qwen-max": ["chat", "stream", "tools"],
+  "deepseek-chat": ["chat", "stream", "tools"],
+  "deepseek-reasoner": ["chat", "stream", "reasoning"],
+  "ernie-4.0-turbo-8k": ["chat", "stream", "tools"],
+  "moonshot-v1-8k": ["chat", "stream", "tools"],
+  "moonshot-v1-32k": ["chat", "stream", "tools"]
+}

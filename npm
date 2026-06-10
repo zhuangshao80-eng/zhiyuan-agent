@@ -1,0 +1,5 @@
+#!/bin/sh
+
+DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+export PATH="$DIR/.local-node/bin:$PATH"
+exec "$DIR/.local-node/bin/node" "$DIR/.local-node/lib/node_modules/npm/bin/npm-cli.js" "$@"

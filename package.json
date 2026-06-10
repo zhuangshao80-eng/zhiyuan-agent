@@ -1,0 +1,95 @@
+{
+  "name": "zhiyuan-agent",
+  "version": "0.1.0",
+  "description": "智元Agent - 中文原生桌面端 AI Agent 平台",
+  "private": true,
+  "type": "module",
+  "main": "dist/desktop/main/main.js",
+  "bin": {
+    "zhiyuan": "dist/cli/index.js",
+    "zhiyuan-agent": "dist/cli/index.js"
+  },
+  "scripts": {
+    "dev": "concurrently -k \"npm:dev:renderer\" \"npm:dev:electron\"",
+    "dev:renderer": "PATH=$PWD/.local-node/bin:$PATH vite --host 127.0.0.1",
+    "dev:electron": "PATH=$PWD/.local-node/bin:$PATH wait-on tcp:5173 && PATH=$PWD/.local-node/bin:$PATH tsc -p tsconfig.electron.json && mkdir -p dist/desktop/preload dist/lib/persona && cp desktop/preload/index.cjs dist/desktop/preload/index.cjs && cp lib/*.json dist/lib/ && cp -R lib/persona/*-templates dist/lib/persona/ && PATH=$PWD/.local-node/bin:$PATH NODE_ENV=development electron .",
+    "start": "PATH=$PWD/.local-node/bin:$PATH npm run build && PATH=$PWD/.local-node/bin:$PATH electron .",
+    "build": "PATH=$PWD/.local-node/bin:$PATH tsc -p tsconfig.electron.json && mkdir -p dist/desktop/preload dist/lib/persona dist/lib/i18n && cp desktop/preload/index.cjs dist/desktop/preload/index.cjs && cp lib/*.json dist/lib/ && cp -R lib/persona/*-templates dist/lib/persona/ && cp -R lib/i18n/locales dist/lib/i18n/ && PATH=$PWD/.local-node/bin:$PATH vite build",
+    "pack": "PATH=$PWD/.local-node/bin:$PATH npm run build && PATH=$PWD/.local-node/bin:$PATH npx --yes electron-builder@^25.1.8 --dir",
+    "dist": "PATH=$PWD/.local-node/bin:$PATH npm run build && PATH=$PWD/.local-node/bin:$PATH npx --yes electron-builder@^25.1.8",
+    "dist:mac": "PATH=$PWD/.local-node/bin:$PATH npm run build && PATH=$PWD/.local-node/bin:$PATH npx --yes electron-builder@^25.1.8 --mac dmg",
+    "dist:win": "PATH=$PWD/.local-node/bin:$PATH npm run build && PATH=$PWD/.local-node/bin:$PATH npx --yes electron-builder@^25.1.8 --win nsis",
+    "dist:linux": "PATH=$PWD/.local-node/bin:$PATH npm run build && PATH=$PWD/.local-node/bin:$PATH npx --yes electron-builder@^25.1.8 --linux AppImage deb",
+    "typecheck": "PATH=$PWD/.local-node/bin:$PATH tsc --noEmit && PATH=$PWD/.local-node/bin:$PATH tsc -p tsconfig.electron.json --noEmit",
+    "lint": "eslint . --ext .ts,.tsx",
+    "cli": "PATH=$PWD/.local-node/bin:$PATH npm run build && PATH=$PWD/.local-node/bin:$PATH node dist/cli/index.js"
+  },
+  "build": {
+    "appId": "cn.zhiyuan.agent",
+    "productName": "智元Agent",
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "extraMetadata": {
+      "main": "dist/desktop/main/main.js"
+    },
+    "mac": {
+      "target": ["dmg"],
+      "category": "public.app-category.productivity"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "category": "Utility"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "zhiyuan-agent",
+        "repo": "zhiyuan-agent"
+      }
+    ]
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^4.5.0",
+    "better-sqlite3": "^11.10.0",
+    "electron": "^30.5.1",
+    "electron-updater": "^6.6.2",
+    "i18next": "^25.2.1",
+    "lucide-react": "^0.511.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "yaml": "^2.8.0",
+    "zustand": "^5.0.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.29",
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7",
+    "autoprefixer": "^10.4.21",
+    "concurrently": "^9.1.2",
+    "eslint": "^9.28.0",
+    "postcss": "^8.5.4",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "wait-on": "^8.0.3"
+  }
+}

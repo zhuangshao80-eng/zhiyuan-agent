@@ -1,0 +1,16 @@
+agent:
+  name: 智元
+  yuan: zhiyuan
+user:
+  name: 用户
+locale: zh-CN
+models:
+  chat: openai:gpt-4o-mini
+  utility: openai:gpt-4o-mini
+  utility_large: openai:gpt-4o
+memory:
+  enabled: true
+tools:
+  disabled: []
+desk:
+  cron_auto_approve: true

@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  font-family:
+    Inter,
+    "PingFang SC",
+    "Microsoft YaHei",
+    "Noto Sans CJK SC",
+    system-ui,
+    sans-serif;
+  background: #101113;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 960px;
+  min-height: 640px;
+  background: #101113;
+}
+
+button {
+  font: inherit;
+}
+
+@layer components {
+  .zy-input {
+    @apply h-10 w-full rounded-lg border border-white/10 bg-surface-950 px-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-brand-500;
+  }
+
+  .zy-textarea {
+    @apply w-full resize-none rounded-lg border border-white/10 bg-surface-950 p-3 text-sm leading-6 text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-brand-500;
+  }
+
+  .zy-icon-button {
+    @apply flex size-8 items-center justify-center rounded-lg border border-white/10 text-zinc-400 transition hover:text-zinc-100;
+  }
+
+  .zy-icon-button:hover {
+    background: rgb(255 255 255 / 0.08);
+  }
+
+  .writing-vertical {
+    writing-mode: vertical-rl;
+  }
+}
