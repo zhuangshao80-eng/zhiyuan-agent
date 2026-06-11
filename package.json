@@ -2,6 +2,10 @@
   "name": "zhiyuan-agent",
   "version": "0.1.0",
   "description": "智元Agent - 中文原生桌面端 AI Agent 平台",
+  "author": {
+    "name": "ZhiYuan Agent Team",
+    "email": "zhuangshao80-eng@users.noreply.github.com"
+  },
   "private": true,
   "type": "module",
   "main": "dist/desktop/main/main.js",
@@ -53,7 +57,8 @@
     },
     "linux": {
       "target": ["AppImage", "deb"],
-      "category": "Utility"
+      "category": "Utility",
+      "maintainer": "ZhiYuan Agent Team <zhuangshao80-eng@users.noreply.github.com>"
     },
     "nsis": {
       "oneClick": false,
