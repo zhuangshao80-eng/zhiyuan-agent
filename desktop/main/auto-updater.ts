@@ -1,5 +1,7 @@
 import type { BrowserWindow } from "electron";
-import { autoUpdater, type ProgressInfo, type UpdateInfo } from "electron-updater";
+import updater, { type ProgressInfo, type UpdateInfo } from "electron-updater";
+
+const { autoUpdater } = updater;
 
 export type UpdateStatus =
   | { type: "idle"; message: string }

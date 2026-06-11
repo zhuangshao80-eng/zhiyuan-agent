@@ -20,7 +20,6 @@ app.commandLine.appendSwitch("disable-gpu-compositing");
 registerIpcHandlers(autoUpdateService);
 
 app.whenReady().then(async () => {
-  await Engine.getInstance().initialize();
   windowManager.createMainWindow();
   autoUpdateService.initialize(() => windowManager.getMainWindow());
 

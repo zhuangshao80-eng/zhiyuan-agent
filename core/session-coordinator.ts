@@ -7,7 +7,6 @@ import { SkillManager } from "./skill-manager.js";
 import { estimateTokens, UsageLedger } from "./usage-ledger.js";
 import { FactStore, type MemoryFactInput } from "../lib/memory/fact-store.js";
 import { compileMemory } from "../lib/memory/memory-compiler.js";
-import { createMemorySearchTool } from "../lib/memory/memory-search.js";
 import { generateSessionSummary } from "../lib/memory/session-summary.js";
 import { buildSystemPrompt } from "../lib/persona/system-prompt.js";
 import { ProviderConfigStore } from "../lib/provider-config.js";
@@ -17,6 +16,7 @@ import type {
   ChatSession,
   ChatStreamEvent,
   LlmMessage,
+  LlmToolDefinition,
   LlmToolCall,
   SendChatMessageRequest,
   SendChatMessageResult,
@@ -25,6 +25,22 @@ import type {
 } from "../shared/types.js";
 
 export type ChatEventSink = (event: ChatStreamEvent) => void;
+
+const memorySearchToolDefinition: LlmToolDefinition = {
+  type: "function",
+  function: {
+    name: "memory_search",
+    description: "搜索 Agent 已记住的事实，支持关键词和标签混合检索。",
+    parameters: {
+      type: "object",
+      properties: {
+        keyword: { type: "string", description: "关键词" },
+        tags: { type: "array", items: { type: "string" }, description: "标签过滤" },
+        limit: { type: "number", description: "返回数量" }
+      }
+    }
+  }
+};
 
 export interface SessionCoordinatorOptions {
   sessionsDir?: string;
@@ -53,7 +69,7 @@ export class SessionCoordinator {
   private readonly userDir: string;
   private readonly llmClient: LlmClient;
   private readonly providerConfigStore: ProviderConfigStore;
-  private readonly factStore: FactStore;
+  private factStore?: FactStore;
   private readonly skillManager: SkillManager;
   private readonly auditLog: AuditLog;
   private readonly usageLedger: UsageLedger;
@@ -72,7 +88,7 @@ export class SessionCoordinator {
     this.userDir = options.userDir ?? "";
     this.llmClient = options.llmClient ?? new LlmClient();
     this.providerConfigStore = options.providerConfigStore ?? new ProviderConfigStore();
-    this.factStore = options.factStore ?? new FactStore(path.join(this.memoryDir, "facts.db"));
+    this.factStore = options.factStore;
     this.skillManager = options.skillManager ?? new SkillManager(path.join(this.agentDir, "skills"));
     this.auditLog = options.auditLog ?? new AuditLog(path.join(this.agentDir, "security", "audit-log.jsonl"));
     this.usageLedger = options.usageLedger ?? new UsageLedger(path.join(this.agentDir, "usage-ledger.jsonl"));
@@ -277,7 +293,7 @@ export class SessionCoordinator {
       const modelRequestedToolResults = await executePendingToolCalls(
         assistantMessage.tool_calls ?? [],
         executedToolSignatures,
-        this.factStore,
+        (assistantMessage.tool_calls ?? []).some((toolCall) => toolCall.name === "memory_search") ? this.getFactStore() : undefined,
         this.disabledTools
       );
       for (const toolResult of modelRequestedToolResults) {
@@ -345,7 +361,7 @@ export class SessionCoordinator {
   }
 
   dispose(): void {
-    if (this.ownsFactStore) {
+    if (this.ownsFactStore && this.factStore) {
       this.factStore.close();
     }
   }
@@ -410,7 +426,7 @@ export class SessionCoordinator {
     }
 
     if (this.isToolEnabled("memory_search") && this.isMemoryEnabled()) {
-      tools.push(createMemorySearchTool(this.factStore).definition);
+      tools.push(memorySearchToolDefinition);
     }
 
     return tools;
@@ -423,11 +439,11 @@ export class SessionCoordinator {
 
     const facts = extractFactsFromSession(session);
     if (facts.length > 0) {
-      this.factStore.addBatch(facts);
+      this.getFactStore().addBatch(facts);
     }
 
     await generateSessionSummary(session, this.memoryDir);
-    await compileMemory({ memoryDir: this.memoryDir, factStore: this.factStore });
+    await compileMemory({ memoryDir: this.memoryDir, factStore: this.getFactStore() });
   }
 
   private searchMemoryForRequest(content: string): VisibleToolCall | null {
@@ -436,7 +452,7 @@ export class SessionCoordinator {
     }
 
     const started = Date.now();
-    const results = this.factStore.search({ keyword: content, limit: 5 });
+    const results = this.getFactStore().search({ keyword: content, limit: 5 });
     const elapsedMs = Date.now() - started;
     if (results.length === 0) {
       return null;
@@ -449,6 +465,14 @@ export class SessionCoordinator {
       status: "completed",
       result: [`命中 ${results.length} 条相关记忆（${elapsedMs}ms）：`, ...results.map((fact) => `- ${fact.fact}`)].join("\n")
     };
+  }
+
+  private getFactStore(): FactStore {
+    if (!this.factStore) {
+      this.factStore = new FactStore(path.join(this.memoryDir, "facts.db"));
+    }
+
+    return this.factStore;
   }
 
   private async buildRequestSystemPrompt(memoryResults: VisibleToolCall[]): Promise<string> {
