@@ -32,6 +32,9 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Use Git Bash for npm scripts on Windows
+        if: runner.os == 'Windows'
+        run: npm config set script-shell "C:\\Program Files\\Git\\bin\\bash.exe"
       - run: npm ci
       - run: npm run typecheck
       - run: npm run ${{ matrix.script }}
