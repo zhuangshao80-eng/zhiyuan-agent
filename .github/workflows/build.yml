@@ -9,6 +9,10 @@ on:
 permissions:
   contents: write
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   build:
     strategy:
@@ -37,3 +41,4 @@ jobs:
         with:
           name: zhiyuan-agent-${{ matrix.os }}
           path: release/*
+          if-no-files-found: error
