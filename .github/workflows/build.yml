@@ -45,3 +45,10 @@ jobs:
           name: zhiyuan-agent-${{ matrix.os }}
           path: release/*
           if-no-files-found: error
+      - name: Publish release assets
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ZhiYuan Agent ${{ github.ref_name }}
+          files: release/*
