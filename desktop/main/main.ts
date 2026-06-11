@@ -13,6 +13,8 @@ if (process.env.NODE_ENV === "development") {
 }
 
 app.setName("智元Agent");
+app.commandLine.appendSwitch("disable-gpu");
+app.commandLine.appendSwitch("disable-gpu-compositing");
 
 registerIpcHandlers(autoUpdateService);
 
