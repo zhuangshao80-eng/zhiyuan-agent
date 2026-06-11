@@ -16,6 +16,7 @@ app.setName("智元Agent");
 app.disableHardwareAcceleration();
 app.commandLine.appendSwitch("disable-gpu");
 app.commandLine.appendSwitch("disable-gpu-compositing");
+app.commandLine.appendSwitch("in-process-gpu");
 
 registerIpcHandlers(autoUpdateService);
 
