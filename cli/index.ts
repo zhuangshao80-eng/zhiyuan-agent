@@ -47,6 +47,12 @@ async function startServer(port: number): Promise<void> {
     if (request.method === "POST" && request.url === "/chat") {
       const body = await readJson<{ sessionId?: string; content?: string; model?: string }>(request);
       const tokens: string[] = [];
+      let completed = false;
+      let errorMessage: string | undefined;
+      let resolveStream: (() => void) | undefined;
+      const streamDone = new Promise<void>((resolve) => {
+        resolveStream = resolve;
+      });
       const result = await coordinator.sendMessage(
         {
           sessionId: body.sessionId,
@@ -55,9 +61,28 @@ async function startServer(port: number): Promise<void> {
         },
         (event) => {
           if (event.type === "token") tokens.push(event.token);
+          if (event.type === "error") {
+            errorMessage = event.error;
+            completed = true;
+            resolveStream?.();
+          }
+          if (event.type === "done") {
+            completed = true;
+            resolveStream?.();
+          }
         }
       );
-      await new Promise((resolve) => setTimeout(resolve, 60));
+      await Promise.race([streamDone, new Promise((resolve) => setTimeout(resolve, 60_000))]);
+      if (!completed) {
+        response.statusCode = 504;
+        response.end(JSON.stringify({ sessionId: result.sessionId, error: "chat response timed out" }));
+        return;
+      }
+      if (errorMessage) {
+        response.statusCode = 502;
+        response.end(JSON.stringify({ sessionId: result.sessionId, error: errorMessage }));
+        return;
+      }
       response.end(JSON.stringify({ sessionId: result.sessionId, content: tokens.join("") }));
       return;
     }
